@@ -1,61 +1,121 @@
-# myissues
-sz
-Adicione este código ao seu arquivo .aspx (ou em um arquivo separado .js):
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="OrdemDeEntrada.aspx.cs" Inherits="Federacao.OrdemDeEntrada" %>
 
-javascript
-Copiar
-Editar
-document.addEventListener("DOMContentLoaded", function () {
-    let tabela = document.getElementById("tabelaCavaleiros"); // ID da sua tabela
-    let linhas = tabela.getElementsByTagName("tr");
-    let cavaleiros = {}; // Objeto para armazenar os cavaleiros e suas posições
+<!DOCTYPE html>
+<html lang="pt-br">
+<head runat="server">
+    <meta charset="UTF-8">
+    <title>Ordem de Entrada</title>
+    <style>
+        .alerta {
+            background-color: #FF6666 !important;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <h2>Ordem de Entrada</h2>
+        <asp:GridView ID="gvOrdemEntrada" runat="server" AutoGenerateColumns="False" CssClass="tabela">
+            <Columns>
+                <asp:BoundField DataField="Ordem" HeaderText="Ordem" />
+                <asp:TemplateField HeaderText="Cavaleiro">
+                    <ItemTemplate>
+                        <asp:Label ID="lblCavaleiro" runat="server" Text='<%# Eval("Cavaleiro") %>'></asp:Label>
+                    </ItemTemplate>
+                </asp:TemplateField>
+                <asp:BoundField DataField="Cavalo" HeaderText="Cavalo" />
+            </Columns>
+        </asp:GridView>
+    </form>
+</body>
+</html>
 
-    for (let i = 1; i < linhas.length; i++) { // Começa de 1 para ignorar o cabeçalho
-        let celulaNome = linhas[i].getElementsByTagName("td")[0]; // Ajuste o índice conforme necessário
-        let nome = celulaNome.textContent.trim();
 
-        if (cavaleiros[nome]) {
-            // Verifica se a repetição está dentro das últimas 7 posições
-            let posicoes = cavaleiros[nome];
-            for (let pos of posicoes) {
-                if (Math.abs(i - pos) < 7) {
-                    // Pinta a linha atual e a anterior de vermelho
-                    linhas[i].style.backgroundColor = "#FF6666";
-                    linhas[pos].style.backgroundColor = "#FF6666";
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace Federacao
+{
+    public partial class OrdemDeEntrada : Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!IsPostBack)
+            {
+                CarregarOrdemDeEntrada();
+            }
+        }
+
+        private void CarregarOrdemDeEntrada()
+        {
+            // Simulando dados (normalmente, isso viria do banco de dados)
+            List<Entrada> lista = new List<Entrada>
+            {
+                new Entrada { Ordem = 1, Cavaleiro = "João Silva", Cavalo = "Thunder" },
+                new Entrada { Ordem = 5, Cavaleiro = "Maria Souza", Cavalo = "Relâmpago" },
+                new Entrada { Ordem = 8, Cavaleiro = "João Silva", Cavalo = "Tempestade" },
+                new Entrada { Ordem = 15, Cavaleiro = "João Silva", Cavalo = "Flecha" },
+                new Entrada { Ordem = 12, Cavaleiro = "Carlos Mendes", Cavalo = "Vento Forte" }
+            };
+
+            // Criando um DataTable para popular o GridView
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Ordem");
+            dt.Columns.Add("Cavaleiro");
+            dt.Columns.Add("Cavalo");
+
+            foreach (var entrada in lista)
+            {
+                dt.Rows.Add(entrada.Ordem, entrada.Cavaleiro, entrada.Cavalo);
+            }
+
+            gvOrdemEntrada.DataSource = dt;
+            gvOrdemEntrada.DataBind();
+
+            // Aplicar a regra de proximidade
+            AplicarAlertaCavaleiros(lista);
+        }
+
+        private void AplicarAlertaCavaleiros(List<Entrada> lista)
+        {
+            for (int i = 0; i < lista.Count; i++)
+            {
+                for (int j = i + 1; j < lista.Count; j++)
+                {
+                    if (lista[i].Cavaleiro == lista[j].Cavaleiro &&
+                        Math.Abs(lista[i].Ordem - lista[j].Ordem) < 10) // Se a diferença for menor que 10 posições
+                    {
+                        // Procurando os Labels dentro do GridView e aplicando a classe CSS
+                        foreach (GridViewRow row in gvOrdemEntrada.Rows)
+                        {
+                            Label lblCavaleiro = (Label)row.FindControl("lblCavaleiro");
+                            if (lblCavaleiro != null && (lblCavaleiro.Text == lista[i].Cavaleiro || lblCavaleiro.Text == lista[j].Cavaleiro))
+                            {
+                                row.Cells[1].CssClass = "alerta";
+                            }
+                        }
+                    }
                 }
             }
-            cavaleiros[nome].push(i);
-        } else {
-            cavaleiros[nome] = [i];
+        }
+
+        public class Entrada
+        {
+            public int Ordem { get; set; }
+            public string Cavaleiro { get; set; }
+            public string Cavalo { get; set; }
         }
     }
-});
-Explicação:
-Obtém a referência da tabela (tabelaCavaleiros).
-Percorre todas as linhas da tabela.
-Salva o nome do cavaleiro e a posição da linha.
-Se o nome já apareceu antes, verifica se a diferença de posição é menor que 7.
-Se for, pinta a linha de vermelho (#FF6666).
-Exemplo de Uso no ASPX
-No seu arquivo Web Forms (.aspx), a tabela deve ter um ID para que o JavaScript funcione corretamente:
-
-html
-Copiar
-Editar
-<table id="tabelaCavaleiros" border="1">
-    <tr>
-        <th>Nome do Cavaleiro</th>
-    </tr>
-    <tr>
-        <td>João Silva</td>
-    </tr>
-    <tr>
-        <td>Maria Souza</td>
-    </tr>
-    <tr>
-        <td>João Silva</td> <!-- Deve ser pintado de vermelho se a condição for atendida -->
-    </tr>
-</table>
-
-<script src="script.js"></script> <!-- Inclua o script no final do body -->
-Caso os dados sejam carregados dinamicamente, garanta que esse script seja chamado após a renderização completa da página.
+}
