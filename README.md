@@ -1,3 +1,110 @@
+Em js puro
+
+<%@ Page Language="C#" AutoEventWireup="true" %>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Ordem de Entrada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        .alerta {
+            background-color: #FF6666 !important;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Ordem de Entrada</h2>
+    <table id="tabelaOrdem">
+        <thead>
+            <tr>
+                <th>Ordem</th>
+                <th>Cavaleiro</th>
+                <th>Cavalo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Linhas serão preenchidas dinamicamente -->
+        </tbody>
+    </table>
+
+    <script>
+        // Lista de cavaleiros e cavalos (simulação dos dados)
+        const listaEntradas = [
+            { Ordem: 1, Cavaleiro: "João Silva", Cavalo: "Thunder" },
+            { Ordem: 5, Cavaleiro: "Maria Souza", Cavalo: "Relâmpago" },
+            { Ordem: 8, Cavaleiro: "João Silva", Cavalo: "Tempestade" },
+            { Ordem: 15, Cavaleiro: "João Silva", Cavalo: "Flecha" },
+            { Ordem: 12, Cavaleiro: "Carlos Mendes", Cavalo: "Vento Forte" }
+        ];
+
+        // Função para preencher a tabela com os dados
+        function preencherTabela() {
+            const tabela = document.getElementById("tabelaOrdem").getElementsByTagName('tbody')[0];
+
+            listaEntradas.forEach(entrada => {
+                let linha = tabela.insertRow();
+                let celulaOrdem = linha.insertCell(0);
+                let celulaCavaleiro = linha.insertCell(1);
+                let celulaCavalo = linha.insertCell(2);
+
+                celulaOrdem.textContent = entrada.Ordem;
+                celulaCavaleiro.textContent = entrada.Cavaleiro;
+                celulaCavalo.textContent = entrada.Cavalo;
+
+                // Adiciona um atributo customizado na célula para referência futura
+                linha.setAttribute("data-cavaleiro", entrada.Cavaleiro);
+                linha.setAttribute("data-ordem", entrada.Ordem);
+            });
+
+            aplicarAlertaCavaleiros();
+        }
+
+        // Função para destacar cavaleiros que aparecem em menos de 10 posições de diferença
+        function aplicarAlertaCavaleiros() {
+            const linhas = document.querySelectorAll("#tabelaOrdem tbody tr");
+
+            for (let i = 0; i < linhas.length; i++) {
+                for (let j = i + 1; j < linhas.length; j++) {
+                    let cavaleiro1 = linhas[i].getAttribute("data-cavaleiro");
+                    let cavaleiro2 = linhas[j].getAttribute("data-cavaleiro");
+                    let ordem1 = parseInt(linhas[i].getAttribute("data-ordem"));
+                    let ordem2 = parseInt(linhas[j].getAttribute("data-ordem"));
+
+                    if (cavaleiro1 === cavaleiro2 && Math.abs(ordem1 - ordem2) < 10) {
+                        linhas[i].classList.add("alerta");
+                        linhas[j].classList.add("alerta");
+                    }
+                }
+            }
+        }
+
+        // Executa as funções ao carregar a página
+        document.addEventListener("DOMContentLoaded", preencherTabela);
+    </script>
+
+</body>
+</html>
+
+
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="OrdemDeEntrada.aspx.cs" Inherits="Federacao.OrdemDeEntrada" %>
 
 <!DOCTYPE html>
